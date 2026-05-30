@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --accent: #6366f1;
+  --font-main: 'Schibsted Grotesk', system-ui, sans-serif;
+  --ink: #0d1017;
+  --ink-text: #ffffff;
+  --ink-faint: #8b93a4;
+  --bg: #eaeef6;
+  --surface: #ffffff;
+  --border: #e4e8f1;
+  --text: #11151c;
+  --text-muted: #5a6474;
+  --text-faint: #97a0b1;
+  --shadow-sm: 0 1px 2px rgba(16,21,28,.04), 0 6px 20px -8px rgba(16,21,28,.10);
+  --shadow-lg: 0 1px 2px rgba(16,21,28,.05), 0 18px 44px -16px rgba(16,21,28,.22);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes drift {
+  from { transform: translateX(-14px); }
+  to   { transform: translateX(14px); }
+}
+
+@keyframes chGrow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+.chart-fade-in {
+  animation: fadeIn 0.2s ease-out both;
+}
+
+.hero-wave {
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.ch-bar {
+  animation: chGrow 0.55s cubic-bezier(.22,1,.36,1) both;
+}
