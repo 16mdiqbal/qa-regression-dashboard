@@ -39,10 +39,10 @@ const STATUS_CONFIG = {
 } satisfies Record<TeamForecast['status'], { label: string; bg: string; text: string; border: string }>;
 
 export function ForecastTable({ regressionEntries }: Props) {
-  const { forecastDeadline, kpaTarget } = useFilter();
+  const { forecastDeadline, kpiTarget } = useFilter();
   const forecasts = useMemo(
-    () => computeForecast(regressionEntries, forecastDeadline, kpaTarget),
-    [regressionEntries, forecastDeadline, kpaTarget],
+    () => computeForecast(regressionEntries, forecastDeadline, kpiTarget),
+    [regressionEntries, forecastDeadline, kpiTarget],
   );
 
   if (forecasts.length === 0) return null;
@@ -54,9 +54,9 @@ export function ForecastTable({ regressionEntries }: Props) {
     <div className="bg-white rounded-2xl border border-gray-200 shadow-md flex flex-col max-h-[480px]">
       <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-800">KPA Pace Plan</span>
+          <span className="text-sm font-semibold text-gray-800">KPI Pace Plan</span>
           <span className="text-gray-300 select-none">·</span>
-          <span className="text-sm text-gray-500">Monthly automation rate targets to reach {kpaTarget}%</span>
+          <span className="text-sm text-gray-500">Monthly automation rate targets to reach {kpiTarget}%</span>
         </div>
         <span className="text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-0.5">
           Deadline: {deadlineLabel}
@@ -95,7 +95,7 @@ export function ForecastTable({ regressionEntries }: Props) {
           <tbody className="divide-y divide-gray-50">
             {forecasts.map((f) => {
               const cfg = STATUS_CONFIG[f.status];
-              const targetAutomated = Math.ceil((kpaTarget / 100) * f.totalScenarios);
+              const targetAutomated = Math.ceil((kpiTarget / 100) * f.totalScenarios);
               const remainingScenarios = Math.max(0, targetAutomated - f.currentAutomated);
 
               return (
@@ -112,7 +112,7 @@ export function ForecastTable({ regressionEntries }: Props) {
                   <td className="px-3 py-2.5 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Sparkline rates={f.historical.slice(-5).map((h) => h.rate)} />
-                      <span className={`font-semibold ${f.currentRate >= kpaTarget ? 'text-emerald-600' : 'text-gray-800'}`}>
+                      <span className={`font-semibold ${f.currentRate >= kpiTarget ? 'text-emerald-600' : 'text-gray-800'}`}>
                         {f.currentRate.toFixed(1)}%
                       </span>
                     </div>
@@ -135,8 +135,8 @@ export function ForecastTable({ regressionEntries }: Props) {
                     )}
                   </td>
                   {f.projected.map((p, i) => {
-                    const isHit = p.rate >= kpaTarget;
-                    const wasAlreadyHit = i > 0 && f.projected[i - 1].rate >= kpaTarget;
+                    const isHit = p.rate >= kpiTarget;
+                    const wasAlreadyHit = i > 0 && f.projected[i - 1].rate >= kpiTarget;
                     return (
                       <td key={p.label} className="px-3 py-2.5 text-right tabular-nums">
                         {isHit && !wasAlreadyHit ? (
@@ -168,7 +168,7 @@ export function ForecastTable({ regressionEntries }: Props) {
         <span className="text-gray-200">|</span>
         <span className="inline-flex items-center gap-1">
           <span className="inline-flex items-center gap-0.5 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full px-1.5 py-px text-[9px] font-semibold">✓</span>
-          = first month hitting {kpaTarget}%
+          = first month hitting {kpiTarget}%
         </span>
       </div>
     </div>

@@ -97,7 +97,7 @@ export function Dashboard({
   onHome,
   sheetValueCache = {},
 }: DashboardProps) {
-  const { selectedFolder, selectedDates, chartType, forecastDeadline, kpaTarget } = useFilter();
+  const { selectedFolder, selectedDates, chartType, forecastDeadline, kpiTarget } = useFilter();
   const isRegressionSheet = /regression/i.test(sheetData.name);
   const regressionEntries = sheetData.regressionEntries ?? [];
   const filteredRegressionEntries =
@@ -107,9 +107,9 @@ export function Dashboard({
 
   const needsAccelerationCount = useMemo(() => {
     if (chartType !== 'forecast' || !isRegressionSheet) return 0;
-    return computeForecast(filteredRegressionEntries, forecastDeadline, kpaTarget)
+    return computeForecast(filteredRegressionEntries, forecastDeadline, kpiTarget)
       .filter((f) => f.status === 'needs-acceleration').length;
-  }, [chartType, isRegressionSheet, filteredRegressionEntries, forecastDeadline, kpaTarget]);
+  }, [chartType, isRegressionSheet, filteredRegressionEntries, forecastDeadline, kpiTarget]);
 
   const chartBodyRef = useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(() => (typeof window === 'undefined' ? true : window.innerWidth >= 900));
@@ -233,7 +233,9 @@ export function Dashboard({
                   {sheetData.name}
                 </span>
                 <span style={{ color: 'var(--text-faint)' }}>·</span>
-                <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>{sheetData.metricLabel}</span>
+                <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
+                  {chartType === 'forecast' ? `Projection to ${kpiTarget}%` : sheetData.metricLabel}
+                </span>
                 {needsAccelerationCount > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'color-mix(in srgb, #f59e0b 18%, transparent)', color: '#d97706', border: '1px solid color-mix(in srgb, #f59e0b 30%, transparent)' }}>
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

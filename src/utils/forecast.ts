@@ -13,7 +13,7 @@ function projectedMonthLabels(fromDate: Date, deadline: Date): string[] {
   return labels;
 }
 
-export function computeForecast(entries: RegressionEntry[], deadline: Date, kpaTarget: number): TeamForecast[] {
+export function computeForecast(entries: RegressionEntry[], deadline: Date, kpiTarget: number): TeamForecast[] {
   const teams = [...new Set(entries.map((e) => e.folderName))].filter((t) => t !== 'TOTAL');
 
   return teams.flatMap((team): TeamForecast[] => {
@@ -35,10 +35,10 @@ export function computeForecast(entries: RegressionEntry[], deadline: Date, kpaT
     const monthLabels = projectedMonthLabels(latestDate, deadline);
     const monthsLeft = monthLabels.length;
 
-    const targetAutomated = Math.ceil((kpaTarget / 100) * totalScenarios);
+    const targetAutomated = Math.ceil((kpiTarget / 100) * totalScenarios);
     const remaining = targetAutomated - currentAutomated;
 
-    if (currentRate >= kpaTarget || remaining <= 0) {
+    if (currentRate >= kpiTarget || remaining <= 0) {
       return [{
         team,
         currentRate,
@@ -60,7 +60,7 @@ export function computeForecast(entries: RegressionEntry[], deadline: Date, kpaT
     const recentMonthlyGainPct = windowSize > 0
       ? ((currentRate - windowStart.value) / windowSize) * 4
       : 0;
-    const requiredMonthlyGainPct = (kpaTarget - currentRate) / monthsLeft;
+    const requiredMonthlyGainPct = (kpiTarget - currentRate) / monthsLeft;
     const status = recentMonthlyGainPct >= requiredMonthlyGainPct ? 'on-track' as const : 'needs-acceleration' as const;
 
     const projected = monthLabels.map((label, i) => {

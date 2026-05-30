@@ -32,7 +32,7 @@ export function DeadlinePicker() {
   return (
     <div>
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-        KPA Deadline
+        KPI Deadline
       </p>
 
       {/* Trigger button — shows selected value, toggles picker */}

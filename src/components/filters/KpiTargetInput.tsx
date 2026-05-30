@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useFilter, DEFAULT_KPA_TARGET } from '../../context/FilterContext';
+import { useFilter, DEFAULT_KPI_TARGET } from '../../context/FilterContext';
 
-export function KpaTargetInput() {
-  const { kpaTarget, setKpaTarget } = useFilter();
-  const [raw, setRaw] = useState(String(kpaTarget));
+export function KpiTargetInput() {
+  const { kpiTarget, setKpiTarget } = useFilter();
+  const [raw, setRaw] = useState(String(kpiTarget));
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current); }, []);
@@ -11,9 +11,9 @@ export function KpaTargetInput() {
   function commit(value: string) {
     const n = Number.parseFloat(value);
     if (!Number.isNaN(n) && n > 0 && n <= 100) {
-      setKpaTarget(Math.round(n * 10) / 10); // 1 decimal max
+      setKpiTarget(Math.round(n * 10) / 10); // 1 decimal max
     } else {
-      setRaw(String(kpaTarget)); // revert invalid input
+      setRaw(String(kpiTarget)); // revert invalid input
     }
   }
 
@@ -33,21 +33,21 @@ export function KpaTargetInput() {
     commit(raw);
   }
 
-  const isDefault = kpaTarget === DEFAULT_KPA_TARGET;
+  const isDefault = kpiTarget === DEFAULT_KPI_TARGET;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          KPA Target
+          KPI Target
         </p>
         {!isDefault && (
           <button
             type="button"
-            onClick={() => { setKpaTarget(DEFAULT_KPA_TARGET); setRaw(String(DEFAULT_KPA_TARGET)); }}
+            onClick={() => { setKpiTarget(DEFAULT_KPI_TARGET); setRaw(String(DEFAULT_KPI_TARGET)); }}
             className="text-[10px] text-indigo-500 hover:text-indigo-700 transition-colors"
           >
-            Reset to {DEFAULT_KPA_TARGET}%
+            Reset to {DEFAULT_KPI_TARGET}%
           </button>
         )}
       </div>
@@ -70,7 +70,7 @@ export function KpaTargetInput() {
         </div>
       </div>
       <p className="text-[10px] text-gray-400 mt-1">
-        Teams need to reach {kpaTarget}% by deadline
+        Teams need to reach {kpiTarget}% by deadline
       </p>
     </div>
   );

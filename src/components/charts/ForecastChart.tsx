@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   ReferenceLine,
+  ReferenceArea,
 } from 'recharts';
 import type { RegressionEntry, TeamForecast } from '../../types';
 import { computeForecast } from '../../utils/forecast';
@@ -99,10 +100,10 @@ function ForecastTooltip({
 }
 
 export function ForecastChart({ regressionEntries, width, height }: Props) {
-  const { forecastDeadline, kpaTarget } = useFilter();
+  const { forecastDeadline, kpiTarget } = useFilter();
   const forecasts = useMemo(
-    () => computeForecast(regressionEntries, forecastDeadline, kpaTarget),
-    [regressionEntries, forecastDeadline, kpaTarget],
+    () => computeForecast(regressionEntries, forecastDeadline, kpiTarget),
+    [regressionEntries, forecastDeadline, kpiTarget],
   );
   const chartData = useMemo(() => buildChartData(forecasts), [forecasts]);
 
@@ -114,10 +115,39 @@ export function ForecastChart({ regressionEntries, width, height }: Props) {
     );
   }
 
+  const lastHistLabel = forecasts[0]?.historical.at(-1)?.label;
+  const lastProjLabel = forecasts[0]?.projected.at(-1)?.label;
+  const projectedLabelSet = useMemo(
+    () => new Set(forecasts.flatMap((f) => f.projected.map((p) => p.label))),
+    [forecasts],
+  );
+
   const allRates = forecasts.flatMap((f) => [...f.historical.map((h) => h.rate), ...f.projected.map((p) => p.rate)]);
   const yMin = Math.max(0, Math.floor(Math.min(...allRates) / 10) * 10 - 5);
 
   const chartHeight = Math.max(height - 30, 220);
+
+  function CustomTick({ x = 0, y = 0, payload }: { x?: number; y?: number; payload?: { value: string } }) {
+    if (!payload) return null;
+    const isProj = projectedLabelSet.has(payload.value);
+    const label = isProj ? payload.value.split(' ')[0] : payload.value;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={8}
+          transform="rotate(-45)"
+          textAnchor="end"
+          fill={isProj ? '#6366f1' : '#9ca3af'}
+          fontWeight={isProj ? 600 : 400}
+          fontSize={10}
+        >
+          {label}
+        </text>
+      </g>
+    );
+  }
 
   return (
     <div className="w-full h-full flex flex-col gap-1">
@@ -129,65 +159,94 @@ export function ForecastChart({ regressionEntries, width, height }: Props) {
           <span className="inline-block w-6 border-t-2 border-dashed border-gray-500" />{' '}Projected (required pace)
         </span>
         <span className="text-xs text-orange-500 flex items-center gap-1.5">
-          <span className="inline-block w-6 border-t-2 border-dashed border-orange-400" />{' '}KPA target {kpaTarget}%
+          <span className="inline-block w-6 border-t-2 border-dashed border-orange-400" />{' '}Target {kpiTarget}%
         </span>
       </div>
 
       <ComposedChart width={width} height={chartHeight} data={chartData} margin={{ top: 8, right: 24, bottom: 48, left: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-          <XAxis
-            dataKey="label"
-            tick={{ fontSize: 10, fill: '#9ca3af' }}
-            angle={-45}
-            textAnchor="end"
-            interval="preserveStartEnd"
-            tickLine={false}
-            axisLine={false}
-          />
-          <YAxis
-            domain={[yMin, 100]}
-            tickFormatter={(v: number) => `${v}%`}
-            tick={{ fontSize: 10, fill: '#9ca3af' }}
-            tickLine={false}
-            axisLine={false}
-            width={40}
-          />
-          <Tooltip content={<ForecastTooltip />} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+        <XAxis
+          dataKey="label"
+          tick={<CustomTick />}
+          angle={-45}
+          textAnchor="end"
+          interval="preserveStartEnd"
+          tickLine={false}
+          axisLine={false}
+        />
+        <YAxis
+          domain={[yMin, 100]}
+          tickFormatter={(v: number) => `${v}%`}
+          tick={{ fontSize: 10, fill: '#9ca3af' }}
+          tickLine={false}
+          axisLine={false}
+          width={40}
+        />
+        <Tooltip content={<ForecastTooltip />} />
+
+        {lastHistLabel && lastProjLabel && (
+          <ReferenceArea x1={lastHistLabel} x2={lastProjLabel} fill="#eef2ff" fillOpacity={0.5} />
+        )}
+
+        {lastHistLabel && (
           <ReferenceLine
-            y={kpaTarget}
-            stroke="#f97316"
-            strokeDasharray="4 3"
-            strokeWidth={1.5}
-            label={{ value: `KPA ${kpaTarget}%`, position: 'insideTopRight', fontSize: 10, fill: '#f97316', dy: -4 }}
+            x={lastHistLabel}
+            stroke="#d1d5db"
+            strokeDasharray="4 4"
+            strokeWidth={1}
+            label={{ value: 'PROJECTED', position: 'insideTopRight', fontSize: 9, fill: '#9ca3af', fontWeight: 600 }}
           />
-          {forecasts.map((f) => {
-            const color = getFolderColor(f.team);
-            return [
-              <Line
-                key={`${f.team}_hist`}
-                dataKey={`${f.team}_hist`}
-                stroke={color}
-                strokeWidth={1.75}
-                dot={{ r: 2, fill: color, strokeWidth: 0 }}
-                activeDot={{ r: 4 }}
-                connectNulls
-                legendType="none"
-                name={f.team}
-              />,
-              <Line
-                key={`${f.team}_proj`}
-                dataKey={`${f.team}_proj`}
-                stroke={color}
-                strokeWidth={1.75}
-                strokeDasharray="5 4"
-                dot={false}
-                activeDot={{ r: 4 }}
-                connectNulls
-                legendType="none"
-                name={f.team}
-              />,
-            ];
-          })}
+        )}
+
+        <ReferenceLine
+          y={kpiTarget}
+          stroke="#f97316"
+          strokeDasharray="4 3"
+          strokeWidth={1.5}
+          label={{ value: `Target ${kpiTarget}%`, position: 'insideTopRight', fontSize: 10, fill: '#f97316', fontWeight: 600, dy: -4 }}
+        />
+
+        {forecasts.map((f) => {
+          const color = getFolderColor(f.team);
+          return [
+            <Line
+              key={`${f.team}_hist`}
+              dataKey={`${f.team}_hist`}
+              stroke={color}
+              strokeWidth={1.75}
+              dot={false}
+              activeDot={{ r: 4 }}
+              connectNulls
+              legendType="none"
+              name={f.team}
+            />,
+            <Line
+              key={`${f.team}_proj`}
+              dataKey={`${f.team}_proj`}
+              stroke={color}
+              strokeWidth={1.75}
+              strokeDasharray="5 4"
+              dot={(dotProps: { cx: number; cy: number; index: number; value?: number; key?: string }) => {
+                if (dotProps.index !== chartData.length - 1 || dotProps.value == null) return null;
+                return (
+                  <circle
+                    key={dotProps.key ?? `endDot-${f.team}`}
+                    cx={dotProps.cx}
+                    cy={dotProps.cy}
+                    r={4.5}
+                    fill={color}
+                    stroke="white"
+                    strokeWidth={1.5}
+                  />
+                );
+              }}
+              activeDot={{ r: 4 }}
+              connectNulls
+              legendType="none"
+              name={f.team}
+            />,
+          ];
+        })}
       </ComposedChart>
     </div>
   );

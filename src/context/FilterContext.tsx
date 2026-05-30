@@ -5,14 +5,14 @@ import { sortDates } from '../utils/date';
 export type ChartType = 'trend' | 'bar' | 'area' | 'forecast';
 
 export const DEFAULT_FORECAST_DEADLINE = new Date(2027, 2, 31); // March 31, 2027
-export const DEFAULT_KPA_TARGET = 96;
+export const DEFAULT_KPI_TARGET = 96;
 
 interface FilterState {
   chartType: ChartType;
   selectedFolder: string;
   selectedDates: string[];
   forecastDeadline: Date;
-  kpaTarget: number;
+  kpiTarget: number;
 }
 
 interface FilterContextValue extends FilterState {
@@ -20,7 +20,7 @@ interface FilterContextValue extends FilterState {
   setSelectedFolder: (folder: string) => void;
   setSelectedDates: (dates: string[]) => void;
   setForecastDeadline: (d: Date) => void;
-  setKpaTarget: (target: number) => void;
+  setKpiTarget: (target: number) => void;
   resetFilters: () => void;
 }
 
@@ -38,20 +38,20 @@ export function FilterProvider({ children, availableDates }: FilterProviderProps
   const [selectedFolder, setSelectedFolder] = useState('ALL');
   const [selectedDates, setSelectedDates] = useState<string[]>(sorted);
   const [forecastDeadline, setForecastDeadline] = useState<Date>(DEFAULT_FORECAST_DEADLINE);
-  const [kpaTarget, setKpaTarget] = useState<number>(DEFAULT_KPA_TARGET);
+  const [kpiTarget, setKpiTarget] = useState<number>(DEFAULT_KPI_TARGET);
 
   const resetFilters = useCallback(() => {
     setChartType('trend');
     setSelectedFolder('ALL');
     setSelectedDates(sorted);
     setForecastDeadline(DEFAULT_FORECAST_DEADLINE);
-    setKpaTarget(DEFAULT_KPA_TARGET);
+    setKpiTarget(DEFAULT_KPI_TARGET);
   }, [sorted]);
 
   return (
     <FilterContext.Provider value={{
-      chartType, selectedFolder, selectedDates, forecastDeadline, kpaTarget,
-      setChartType, setSelectedFolder, setSelectedDates, setForecastDeadline, setKpaTarget, resetFilters,
+      chartType, selectedFolder, selectedDates, forecastDeadline, kpiTarget,
+      setChartType, setSelectedFolder, setSelectedDates, setForecastDeadline, setKpiTarget, resetFilters,
     }}>
       {children}
     </FilterContext.Provider>

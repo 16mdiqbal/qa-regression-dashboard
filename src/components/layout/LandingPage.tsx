@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { SettingsModal } from '../settings/SettingsModal';
 import { MiniSpark } from '../charts/MiniSpark';
+import { MultiSpark } from '../charts/MultiSpark';
 import { isLiveConfig } from '../../config/runtimeConfig';
 import { formatDMY, sortDates } from '../../utils/date';
 import { formatMetric, formatChange } from '../../utils/format';
@@ -63,6 +64,18 @@ function buildTotalSparkValues(entries: SheetEntry[]): number[] {
     const total = entries.find((e) => e.date === d && e.folderName === 'TOTAL');
     return total?.value ?? entries.find((e) => e.date === d)?.value ?? 0;
   });
+}
+
+function buildFolderSeries(
+  entries: SheetEntry[],
+  folderNames: string[],
+  colorFn: (f: string) => string,
+): { values: number[]; color: string }[] {
+  const dates = sortDates([...new Set(entries.map((e) => e.date))]);
+  return folderNames.map((f) => ({
+    color: colorFn(f),
+    values: dates.map((d) => entries.find((e) => e.date === d && e.folderName === f)?.value ?? 0),
+  }));
 }
 
 // ── Animated hero waves ───────────────────────────────────────────────────────
@@ -230,6 +243,23 @@ export function LandingPage({
   const latestDate = latest?.date ?? '';
 
   const folders = [...new Set(sheetData.entries.map((e) => e.folderName))].filter((f) => f !== 'TOTAL');
+  const previewFolders = useMemo(() => {
+    const dates = sortDates([...new Set(sheetData.entries.map((e) => e.date))]);
+    const lastDate = dates.at(-1);
+    if (!lastDate) return folders.slice(0, 3);
+    return [...folders]
+      .sort((a, b) => {
+        const aVal = sheetData.entries.find((e) => e.date === lastDate && e.folderName === a)?.value ?? (higherIsBetter ? Infinity : -Infinity);
+        const bVal = sheetData.entries.find((e) => e.date === lastDate && e.folderName === b)?.value ?? (higherIsBetter ? Infinity : -Infinity);
+        return higherIsBetter ? aVal - bVal : bVal - aVal;
+      })
+      .slice(0, 3);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetData.entries, higherIsBetter]);
+  const folderSeries = useMemo(
+    () => buildFolderSeries(sheetData.entries, previewFolders, getFolderColor),
+    [sheetData.entries, previewFolders],
+  );
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)', fontFamily: 'var(--font-main)' }}>
@@ -456,7 +486,7 @@ export function LandingPage({
                   )}
                   {/* Folder color dots */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    {folders.slice(0, 4).map((f) => (
+                    {previewFolders.map((f) => (
                       <span key={f} className="inline-flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: 'var(--text-faint)' }}>
                         <span className="w-2 h-2 rounded-full" style={{ background: getFolderColor(f), border: `2px solid ${getFolderColor(f)}` }} />
                         {f}
@@ -465,8 +495,8 @@ export function LandingPage({
                   </div>
                 </div>
                 <div className="flex-1 min-h-[180px]">
-                  {sparkValues.length >= 2 ? (
-                    <MiniSpark values={sparkValues} color="var(--accent)" w={400} h={180} />
+                  {folderSeries.length > 0 ? (
+                    <MultiSpark series={folderSeries} w={400} h={180} />
                   ) : (
                     <div className="h-[180px] rounded-lg" style={{ background: 'var(--surface)' }} />
                   )}

@@ -3,7 +3,7 @@ import { ChartTypeSelector } from '../filters/ChartTypeSelector';
 import { FolderSelector } from '../filters/FolderSelector';
 import { DateSelector } from '../filters/DateSelector';
 import { DeadlinePicker } from '../filters/DeadlinePicker';
-import { KpaTargetInput } from '../filters/KpaTargetInput';
+import { KpiTargetInput } from '../filters/KpiTargetInput';
 import { useFilter } from '../../context/FilterContext';
 import type { SheetEntry } from '../../types';
 
@@ -109,7 +109,7 @@ export function Sidebar({ folders, dates, lastUpdated, isRegressionSheet, entrie
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 17l4-8 4 4 4-6 4 4" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 5h6v6" strokeDasharray="2 1" />
               </svg>
-              KPA Forecast
+              KPI Forecast
               {/* Toggle switch */}
               <span className="ml-auto flex-shrink-0">
                 <span
@@ -125,7 +125,7 @@ export function Sidebar({ folders, dates, lastUpdated, isRegressionSheet, entrie
             </button>
             {isForecast && (
               <div className="ml-2 pl-3 flex flex-col gap-4 mt-1" style={{ borderLeft: '2px solid color-mix(in srgb, var(--accent) 25%, transparent)' }}>
-                <KpaTargetInput />
+                <KpiTargetInput />
                 <DeadlinePicker />
               </div>
             )}
