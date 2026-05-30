@@ -332,7 +332,7 @@ export function LandingPage({
                 color: '#fff',
               }}
             >
-              QA Regression<br />Dashboard
+              Quality at<br />a Glance
             </h2>
             <p
               className="mt-4 leading-[1.5]"
